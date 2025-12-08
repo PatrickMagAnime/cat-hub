@@ -7,8 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: #fff; }
-        .ph-orange { color: #ff9900; }
-        .ph-bg-orange { background-color: #ff9900; }
+        .ph-orange { color: #ff00bf; }
+        .ph-bg-orange { background-color: #ff00bf; }
         
         /* FIX 1: Responsive Grid Setup */
         .grid-container {
@@ -28,7 +28,7 @@
             border-radius: 0.5rem;
         }
 
-        .card:hover { border-color: #ff9900; transform: scale(1.02); }
+        .card:hover { border-color: #ff00bf; transform: scale(1.02); }
 
         .media-container {
             width: 100%;
@@ -147,6 +147,31 @@
         }
         // Bilder nutzen bereits loading="lazy" und werden vom Browser effizient behandelt.
     }
+
+async function saveMetadataToServer(metadata) {
+  try {
+    const res = await fetch('/save-metadata', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(metadata)
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const msg = body.error || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+    if (!body.ok) {
+      throw new Error(body.error || 'Unbekannter Fehler');
+    }
+    // Erfolg – du kannst statt alert auch UI-Feedback setzen
+    alert('metadata.json erfolgreich auf dem Server gespeichert.');
+    return true;
+  } catch (err) {
+    alert('Fehler beim Speichern: ' + (err.message || err));
+    console.error(err);
+    return false;
+  }
+}
 
     function playVideo(videoElement) {
         // Spielen nur versuchen, wenn Video pausiert ist UND wir unter dem Limit sind
@@ -433,17 +458,8 @@
     // --- JSON Export (Download) ---
     function exportMetadata() {
         const jsonString = JSON.stringify(metadata, null, 4);
-        const blob = new Blob([jsonString], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'metadata.json';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        alert("metadata.json wurde heruntergeladen. Ersetze die Datei im Hauptverzeichnis und pushe die Änderungen zu Git!");
+        saveMetadataToServer(metadata);
+        alert("metadata.json wurde aktualisiert. Pushe die Änderungen zu Git!");
     }
 
 
