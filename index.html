@@ -495,8 +495,24 @@ async function saveMetadataToServer(metadata) {
         renderModalTags(metadata.assignments[currentFileInModal]);
     }
 
-    function saveModalChanges() {
-        updateCardTagsUI(currentFileInModal); 
+    async function saveModalChanges() {
+        // UI aktualisieren
+        updateCardTagsUI(currentFileInModal);
+
+        // Versuche, die Metadaten sofort auf dem Server zu speichern.
+        // Wenn der Server nicht erreichbar ist, bleibt die Änderung lokal in memory (metadata).
+        try {
+            const ok = await saveMetadataToServer(metadata);
+            if (ok) {
+                alert('Änderungen gespeichert und metadata.json auf dem Server aktualisiert.');
+            } else {
+                alert('Änderungen lokal übernommen, aber Speichern auf dem Server fehlgeschlagen.');
+            }
+        } catch (e) {
+            console.error('saveModalChanges: Fehler beim Speichern', e);
+            alert('Änderungen lokal übernommen, aber Speichern auf dem Server fehlgeschlagen.');
+        }
+
         closeModal();
     }
 
