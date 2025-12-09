@@ -19,7 +19,7 @@ def run_ffmpeg_video_command(input_path, output_webm_path):
     """Führt FFmpeg-Befehle für WebM-Konvertierung aus (ohne Thumbnail)."""
     
     # --- 1. WebM Konvertierung (Primär) ---
-    print(f"🎬 Verarbeite Video WebM: {input_path} -> {os.path.basename(output_webm_path)}")
+    print(f"Verarbeite Video WebM: {input_path} -> {os.path.basename(output_webm_path)}")
     webm_command = [
         'ffmpeg', '-i', input_path,
         '-vcodec', 'libvpx-vp9', '-crf', '35', '-b:v', '0', 
@@ -30,21 +30,21 @@ def run_ffmpeg_video_command(input_path, output_webm_path):
     try:
         subprocess.run(webm_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-        print(f"❌ WebM-Fehler bei {input_path}: {e.output.decode('utf-8')}")
+        print(f"WebM-Fehler bei {input_path}: {e.output.decode('utf-8')}")
         return False
     except FileNotFoundError:
-        print("❌ FEHLER: FFmpeg nicht gefunden.")
+        print("FEHLER: FFmpeg nicht gefunden.")
         return False
 
     # --- 2. JPG Thumbnail Generierung ENTFALLEN ---
     
-    print("✅ Video-Konvertierung erfolgreich.")
+    print("Video-Konvertierung erfolgreich.")
     return True
 
 # NEUE Funktion für Bilder (Konvertierung zu WebP)
 def run_ffmpeg_image_command(input_path, output_webp_path):
     """Konvertiert Bilder (JPG, PNG) zu WebP."""
-    print(f"🖼️ Konvertiere Bild WebP: {input_path} -> {os.path.basename(output_webp_path)}")
+    print(f"Konvertiere Bild WebP: {input_path} -> {os.path.basename(output_webp_path)}")
     
     # -q:v 80 ist eine gute Qualität/Kompromiss für WebP
     image_command = [
@@ -57,13 +57,13 @@ def run_ffmpeg_image_command(input_path, output_webp_path):
     ]
     try:
         subprocess.run(image_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        print("✅ Bild-Konvertierung erfolgreich.")
+        print("Bild-Konvertierung erfolgreich.")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ WebP-Konvertierungsfehler bei {input_path}: {e.output.decode('utf-8')}")
+        print(f"WebP-Konvertierungsfehler bei {input_path}: {e.output.decode('utf-8')}")
         return False
     except FileNotFoundError:
-        print("❌ FEHLER: FFmpeg nicht gefunden.")
+        print("FEHLER: FFmpeg nicht gefunden.")
         return False
 
 # --- Hauptfunktion ---
@@ -73,7 +73,7 @@ def main():
         os.makedirs(FINAL_OUTPUT_FOLDER)
         
     if not os.path.exists(RAW_INPUT_FOLDER):
-        print(f"⚠️ ACHTUNG: Der Rohdaten-Ordner '{RAW_INPUT_FOLDER}' existiert nicht. Es gibt nichts zu verarbeiten.")
+        print(f"ACHTUNG: Der Rohdaten-Ordner '{RAW_INPUT_FOLDER}' existiert nicht. Es gibt nichts zu verarbeiten.")
         os.makedirs(RAW_INPUT_FOLDER)
         return 
 
@@ -95,7 +95,7 @@ def main():
     raw_files_list = os.listdir(RAW_INPUT_FOLDER)
     
     if not raw_files_list:
-        print(f"ℹ️ Der Rohdaten-Ordner '{RAW_INPUT_FOLDER}' ist leer.")
+        print(f"Der Rohdaten-Ordner '{RAW_INPUT_FOLDER}' ist leer.")
 
     
     for filename in raw_files_list:
@@ -106,7 +106,7 @@ def main():
 
         ext = os.path.splitext(filename)[1].lower()
         if ext not in ALLOWED_EXTENSIONS:
-            print(f"⚠️ Ignoriere unbekannten Dateityp: {filename}")
+            print(f"Ignoriere unbekannten Dateityp: {filename}")
             continue
 
         base_name = os.path.splitext(filename)[0]
@@ -127,7 +127,7 @@ def main():
                     needs_processing = False
             
             if needs_processing:
-                print(f"🔄 Verarbeite {filename} (neu oder geändert)...")
+                print(f"Verarbeite {filename} (neu oder geändert)...")
                 # run_ffmpeg_video_command nur mit WebM-Pfad aufrufen
                 if run_ffmpeg_video_command(input_path, output_webm_path):
                     final_files.append(output_webm_filename)
@@ -151,7 +151,7 @@ def main():
                         needs_processing = False
 
                 if needs_processing:
-                    print(f"🔄 Verarbeite Bild {filename} (neu oder geändert)...")
+                    print(f"Verarbeite Bild {filename} (neu oder geändert)...")
                     if run_ffmpeg_image_command(input_path, output_webp_path):
                         final_files.append(output_webp_filename)
                 else:
@@ -162,7 +162,7 @@ def main():
                 output_path = os.path.join(FINAL_OUTPUT_FOLDER, filename)
                 
                 if not os.path.exists(output_path) or os.path.getmtime(input_path) > os.path.getmtime(output_path):
-                    print(f"📁 Kopiere/Aktualisiere {ext.upper()}: {filename}")
+                    print(f"Kopiere/Aktualisiere {ext.upper()}: {filename}")
                     shutil.copy2(input_path, output_path)
                 
                 final_files.append(filename)
@@ -174,7 +174,7 @@ def main():
         # Dies löscht nun auch alte .jpg-Thumbnails, die nicht mehr in final_files sind.
         if os.path.isfile(os.path.join(FINAL_OUTPUT_FOLDER, processed_file)) and processed_file not in final_files:
              os.remove(os.path.join(FINAL_OUTPUT_FOLDER, processed_file))
-             print(f"🗑️  Alte verarbeitete Datei gelöscht: {processed_file}")
+             print(f"Alte verarbeitete Datei gelöscht: {processed_file}")
 
 
     # 5. Metadaten abgleichen und speichern (Unverändert)
@@ -188,8 +188,8 @@ def main():
     with open(METADATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
-    print(f"\n✅ Alle Dateien verarbeitet und {len(final_files)} Einträge in {METADATA_FILE} registriert.")
-    print("👉 Die HTML-Seite lädt jetzt aus dem '/sources' Ordner.")
+    print(f"\nAlle Dateien verarbeitet und {len(final_files)} Einträge in {METADATA_FILE} registriert.")
+    print("Die HTML-Seite lädt jetzt aus dem '/sources' Ordner.")
 
 
 if __name__ == "__main__":
